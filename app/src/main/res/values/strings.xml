@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">MyPriceWatcher_Two</string>
+    <string name="action_settings">Settings</string>
+    <item name="listView" type="id">listView</item>
+</resources>
