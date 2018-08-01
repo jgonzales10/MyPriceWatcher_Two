@@ -10,6 +10,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.EditText;
 
+import java.util.zip.InflaterInputStream;
+
 public class SecondActivity extends AppCompatActivity {
     //2 buttons, 4 descriptors
     private Button refreshButton;
@@ -30,6 +32,10 @@ public class SecondActivity extends AppCompatActivity {
     private priceWatcherDatabaseHelper myDB;
     private int selectedID;
     private String selectedName;
+    private double selectedInitialPrice;
+    private double selectedCurrPrice;
+    private String selectedUrl;
+    private String selectedCategory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,11 +63,27 @@ public class SecondActivity extends AppCompatActivity {
         Intent receivedIntent = getIntent();
         selectedID = receivedIntent.getIntExtra("id", -1);
         selectedName = receivedIntent.getStringExtra("name");
-        //selectedInitialPrice = receivedIntent.getDoubleExtra("initialPrice");
-        //selectedCurrPrice = receivedIntent.getDoubleExtra("currPrice");
+        selectedInitialPrice = receivedIntent.getDoubleExtra("itemInitial", 0);
+        selectedCurrPrice = receivedIntent.getDoubleExtra("itemCurr", 0);
+        selectedUrl = receivedIntent.getStringExtra("url");
+        selectedCategory = receivedIntent.getStringExtra("category");
 
-        nameDisplay.setText(selectedName);
-        //toEdit = getIntent().getBooleanExtra("toEdit",false);
+        Item editItem = new Item(selectedName, selectedInitialPrice,selectedCurrPrice,selectedUrl,selectedCategory);
+
+        item.setName(selectedName);
+        item.setInitialPrice(selectedInitialPrice);
+        item.setCurrPrice(selectedCurrPrice);
+        item.setUrl(selectedUrl);
+        item.setCategory(selectedCategory);
+
+        nameEditDisplay.setText(selectedName);
+        displayItem(editItem);
+        //nameDisplay.setText(selectedName);
+        //urlDisplay.setText(selectedUrl);
+        //initPriceDisplay.setText(String.format("%.02f",selectedInitialPrice));
+        //currPriceDisplay.setText(String.format("%.02f",selectedCurrPrice));
+        //double percent =item.percentageChange();
+        //percentChangeDisplay.setText(String.format("%.0f",percent,"%"));//toEdit = getIntent().getBooleanExtra("toEdit",false);
         //restoreArray = getIntent().getParcelableArrayExtra("restoreArray");
         //dispItem = getIntent().getParcelableExtra("Item");
 
@@ -85,6 +107,8 @@ public class SecondActivity extends AppCompatActivity {
     public void searchClicked(View view){
         //Toast.makeText(this, "Adding Item!", Toast.LENGTH_SHORT).show();
         //String item = nameEditDisplay.getText().toString();
+
+
 
         URL = urlDisplay.getText().toString();
         name = nameEditDisplay.getText().toString();
@@ -157,7 +181,8 @@ public class SecondActivity extends AppCompatActivity {
     }
     public void refreshClicked(View view) {
         Toast.makeText(this, "Refresh Tapped!", Toast.LENGTH_SHORT).show();
-        if (!item.initIsZero()){
+        URL = urlDisplay.getText().toString();
+        if (!URL.isEmpty()) {//checks that URL is not blank
             item.setCurrPrice(PriceFinder.findPrice(item.getURL()));
             displayInfo();
         }

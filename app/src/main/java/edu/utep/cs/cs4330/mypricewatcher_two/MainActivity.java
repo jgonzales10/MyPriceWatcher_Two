@@ -264,6 +264,21 @@ public class MainActivity extends AppCompatActivity {
 
     public void RefreshClicked(View view) {
         Toast.makeText(this, "Refreshing Prices!", Toast.LENGTH_SHORT).show();
+        for(int i = 0; i < listAdapter.getCount(); i++){
+            String[] parts = listAdapter.getItem(i).toString().split(":");
+            String name = parts[0];
+            //String name = listAdapter.getItem(index).toString();
+            Cursor data1 = myDb.getItemID(name);
+
+            int itemID = -1;
+            while (data1.moveToNext()) {
+                itemID = data1.getInt(0);
+            }
+            if (itemID > -1) {
+                //myDb.updateInitialPrice();
+            }
+        }
+
         /*
         for(int i = 0; i < itemArray.length; i++){
             if ((itemArray[i] != null) && !(itemArray[i].initIsZero())){
@@ -358,13 +373,25 @@ public class MainActivity extends AppCompatActivity {
             String name = parts[0];
             Cursor data1 = myDb.getItemID(name);
             int itemID = -1;
+            double itemInitial = 0;
+            double itemCurr = 0;
+            String url = "default";
+            String category = null;
             while (data1.moveToNext()) {
                 itemID = data1.getInt(0);
+                itemInitial = data1.getDouble(2);
+                itemCurr = data1.getDouble(3);
+                url = data1.getString(4);
+                category = data1.getString(5);
             }
             if (itemID > -1) {
                 Intent editItemIntent = new Intent(MainActivity.this, SecondActivity.class);
                 editItemIntent.putExtra("id", itemID);
                 editItemIntent.putExtra("name", name);
+                editItemIntent.putExtra("itemInitial",itemInitial);
+                editItemIntent.putExtra("itemCurr",itemCurr);
+                editItemIntent.putExtra("url",url);
+                editItemIntent.putExtra("category",category);
                 startActivity(editItemIntent);
             } else {
                 toastMessage("No ID associated with that name");
