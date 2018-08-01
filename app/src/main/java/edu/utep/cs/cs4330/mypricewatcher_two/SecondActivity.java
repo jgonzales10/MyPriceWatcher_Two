@@ -27,13 +27,18 @@ public class SecondActivity extends AppCompatActivity {
     private boolean toEdit;
     private Item dispItem;
     private Parcelable[] restoreArray;
+    private priceWatcherDatabaseHelper myDB;
+    private int selectedID;
+    private String selectedName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_second);
         item = new Item();
-        itemArray = new ItemArray();
+        //itemArray = new ItemArray();
+        myDB = new priceWatcherDatabaseHelper(this);
+
 
         //Buttons
         refreshButton = findViewById(R.id.refreshButton);
@@ -49,10 +54,18 @@ public class SecondActivity extends AppCompatActivity {
         currPriceDisplay = findViewById(R.id.currPriceDisplay);
         percentChangeDisplay = findViewById(R.id.percentChangeDisplay);
         //For intent passing
-        toEdit = getIntent().getBooleanExtra("toEdit",false);
-        restoreArray = getIntent().getParcelableArrayExtra("restoreArray");
-        dispItem = getIntent().getParcelableExtra("Item");
+        Intent receivedIntent = getIntent();
+        selectedID = receivedIntent.getIntExtra("id", -1);
+        selectedName = receivedIntent.getStringExtra("name");
+        //selectedInitialPrice = receivedIntent.getDoubleExtra("initialPrice");
+        //selectedCurrPrice = receivedIntent.getDoubleExtra("currPrice");
 
+        nameDisplay.setText(selectedName);
+        //toEdit = getIntent().getBooleanExtra("toEdit",false);
+        //restoreArray = getIntent().getParcelableArrayExtra("restoreArray");
+        //dispItem = getIntent().getParcelableExtra("Item");
+
+        /*
         if(toEdit){
             Item forEdit = dispItem;
             item = forEdit;
@@ -62,6 +75,7 @@ public class SecondActivity extends AppCompatActivity {
             displayInfo();
 
         }
+        */
         //item = dispItem;
         //displayItem(dispItem);
 
@@ -70,6 +84,8 @@ public class SecondActivity extends AppCompatActivity {
 
     public void searchClicked(View view){
         //Toast.makeText(this, "Adding Item!", Toast.LENGTH_SHORT).show();
+        //String item = nameEditDisplay.getText().toString();
+
         URL = urlDisplay.getText().toString();
         name = nameEditDisplay.getText().toString();
         //item.setUrl(URL);
@@ -84,22 +100,52 @@ public class SecondActivity extends AppCompatActivity {
                 double price = PriceFinder.findPrice(URL);
                 itemI.setInitialPrice(price);
                 itemI.setCurrPrice(PriceFinder.findPrice(URL));
-                send(itemI, restoreArray);
+                //send(itemI, restoreArray);
+                addData(itemI.getName(),itemI.getInitialPrice(), itemI.getCurrPrice(), itemI.getURL(), itemI.getCategory());
+                //addData(itemI.getName());
+                displayItem(itemI);
             }
             else{ //user is using same url, doesn't change the InitialPrice
                 item.setUrl(URL);
                 item.setName(name);
                 item.setCurrPrice(PriceFinder.findPrice(URL));
-                send(item, restoreArray);
+                addData(item.getName(),item.getInitialPrice(), item.getCurrPrice(), item.getURL(), item.getCategory());
+                displayItem(item);
+                //addData(item.getName());
+                //send(item, restoreArray);
 
             }
             if (item.initIsZero()) {
                 item.setInitialPrice(item.getCurrPrice());
-                send(item, restoreArray);
+                //editInitialPrice(item.getInitialPrice(), item);
+                addData(item.getName(),item.getInitialPrice(), item.getCurrPrice(), item.getURL(), item.getCategory());
+
+                //addData(item.getName());
+                displayItem(item);
+                //send(item, restoreArray);
             }
 
         }
 
+    }
+    public void addData(String name){
+        boolean insertData = myDB.addData(name);
+        if (insertData) {
+            toastMessage("Data Successfully Inserted!");
+        } else {
+            toastMessage("Something went wrong");
+        }
+    }
+    public void editInitialPrice(double toSend, Item i){
+        myDB.updateInitialPrice(toSend, selectedID, i.getCurrPrice());
+    }
+    public void addData(String name, double initialPrice, double currPrice, String url, String category){
+        boolean insertData = myDB.addData(name, initialPrice, currPrice, url, category);
+        if (insertData) {
+            toastMessage("Data Successfully Inserted!");
+        } else {
+            toastMessage("Something went wrong");
+        }
     }
     public void send(Item itemI, Parcelable[] restoreArray){
         Intent intent = new Intent(this, MainActivity.class);
@@ -127,7 +173,7 @@ public class SecondActivity extends AppCompatActivity {
         double percent = item.percentageChange();
 
         urlDisplay.setText(URL);
-        nameDisplay.setText(name); //For now i'm just calling the item by its url
+        nameDisplay.setText(name);
         initPriceDisplay.setText(String.format("%.02f",initialPrice));
         currPriceDisplay.setText(String.format("%.02f",currPrice));
         percentChangeDisplay.setText(String.format("%.0f",percent,"%"));
@@ -140,7 +186,7 @@ public class SecondActivity extends AppCompatActivity {
         double percent = item.percentageChange();
 
         urlDisplay.setText(URL);
-        nameDisplay.setText(name); //For now i'm just calling the item by its url
+        nameDisplay.setText(name);
         initPriceDisplay.setText(String.format("%.02f",initialPrice));
         currPriceDisplay.setText(String.format("%.02f",currPrice));
         percentChangeDisplay.setText(String.format("%.0f",percent,"%"));
@@ -150,6 +196,7 @@ public class SecondActivity extends AppCompatActivity {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://"+ urlDisplay.getText().toString()));
         startActivity(intent);
     }
-
-
+    private void toastMessage(String message){
+        Toast.makeText(this,message, Toast.LENGTH_SHORT).show();
+    }
 }
